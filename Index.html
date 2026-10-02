@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>A date invitation</title>
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#fff0f0; --card:#ffffff; --ink:#3b1530; --muted:#7a5470; --rose:#e8456b; --rose-ink:#ffffff; --gold:#f5b64a;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#240c2e; --card:#35143f; --ink:#ffeef2; --muted:#d4a9c4; --rose:#ff6b8b; --rose-ink:#2a0b1f; --gold:#ffd27a;
+}}
+:root[data-theme="dark"]{--bg:#240c2e; --card:#35143f; --ink:#ffeef2; --muted:#d4a9c4; --rose:#ff6b8b; --rose-ink:#2a0b1f; --gold:#ffd27a;}
+*,*::before,*::after{box-sizing:inherit}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;align-items:center;justify-content:center;overflow-x:hidden}
+main{width:100%;max-width:440px;padding:24px;text-align:center;position:relative}
+h1{font-family:Georgia,"Times New Roman",serif;font-weight:600;font-size:clamp(2rem,9vw,2.8rem);line-height:1.1;margin:0 0 12px}
+p{margin:0 0 24px;color:var(--muted);font-size:1.05rem;line-height:1.5}
+.btns{display:flex;gap:14px;justify-content:center;align-items:center;min-height:64px;position:relative}
+button{font:inherit;font-weight:700;font-size:1.05rem;border:0;border-radius:999px;padding:14px 28px;cursor:pointer}
+button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+#yes{background:var(--rose);color:var(--rose-ink)}
+#no{background:transparent;color:var(--muted);border:2px solid var(--muted);transition:transform .25s}
+.card{background:var(--card);border-radius:20px;padding:22px;margin:0 0 20px;text-align:left}
+.card div{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid color-mix(in srgb,var(--muted) 25%,transparent)}
+.card div:last-child{border:0}
+.card span{color:var(--muted)}
+.card b{text-align:right}
+[hidden]{display:none!important}
+.heart{position:fixed;bottom:-30px;pointer-events:none;animation:rise 2.4s ease-out forwards}
+@keyframes rise{to{transform:translateY(-110vh) rotate(25deg);opacity:0}}
+@media (prefers-reduced-motion:reduce){.heart{animation:none;display:none}#no{transition:none}}
+</style>
+</head>
+<body>
+<main>
+  <section id="ask">
+    <h1 id="askTitle"></h1>
+    <p>I'd like to take you out. Dinner, good company, and me trying to impress you.</p>
+    <div class="btns">
+      <button id="yes">Yes, I'd love to</button>
+      <button id="no">No</button>
+    </div>
+  </section>
+
+  <section id="done" hidden>
+    <h1>It's a date!</h1>
+    <p>I can't wait. Here are the details.</p>
+    <div class="card">
+      <div><span>Day</span><b id="d-day"></b></div>
+      <div><span>Time</span><b id="d-time"></b></div>
+      <div><span>Place</span><b id="d-place"></b></div>
+      <div><span>Dress</span><b id="d-dress"></b></div>
+    </div>
+    <button id="reply">Tell him you said yes</button>
+  </section>
+</main>
+
+<script>
+// Edit these details before sharing
+var CONFIG = {
+  herName: "Winnie",
+  myPhone: "265881197442",                       // e.g. "265999000000" (digits only) so her reply opens WhatsApp
+  day: "Sunday",
+  time: "7:00 PM",
+  place: "Your favourite restaurant",
+  dress: "Whatever makes you feel great"
+};
+
+var $ = function(id){return document.getElementById(id)};
+$("askTitle").textContent = CONFIG.herName + ", will you go on a date with me?";
+$("d-day").textContent = CONFIG.day;
+$("d-time").textContent = CONFIG.time;
+$("d-place").textContent = CONFIG.place;
+$("d-dress").textContent = CONFIG.dress;
+
+var tries = 0, no = $("no");
+var lines = ["No","Are you sure?","Really?","Think again","Please?"];
+
+function dodge(){
+  tries++;
+  if (tries >= lines.length){
+    no.textContent = "Okay, yes";
+    no.onclick = say;
+    return;
+  }
+  no.textContent = lines[tries];
+  var x = (Math.random()-0.5)*160, y = (Math.random()-0.5)*120;
+  no.style.transform = "translate(" + x + "px," + y + "px)";
+}
+no.addEventListener("click", function(e){ if (tries < lines.length-1){ e.preventDefault(); dodge(); } else if (tries === lines.length-1){ dodge(); } });
+no.addEventListener("pointerenter", function(){ if (tries < lines.length-1) dodge(); });
+
+function hearts(){
+  for (var i=0;i<24;i++){
+    var h = document.createElement("div");
+    h.className = "heart";
+    h.textContent = ["\u2764\uFE0F","\uD83D\uDC96","\uD83C\uDF39"][i%3];
+    h.style.left = Math.random()*100 + "vw";
+    h.style.fontSize = (18+Math.random()*22) + "px";
+    h.style.animationDelay = (Math.random()*0.8) + "s";
+    document.body.appendChild(h);
+    setTimeout(function(el){el.remove()}, 3500, h);
+  }
+}
+function say(){
+  $("ask").hidden = true;
+  $("done").hidden = false;
+  hearts();
+}
+$("yes").addEventListener("click", say);
+
+$("reply").addEventListener("click", function(){
+  var msg = "Yes! See you " + CONFIG.day + " at " + CONFIG.time + " \u2764\uFE0F";
+  if (CONFIG.myPhone) location.href = "https://wa.me/" + CONFIG.myPhone + "?text=" + encodeURIComponent(msg);
+  else { try { navigator.clipboard.writeText(msg); } catch(e){} $("reply").textContent = "Copied. Send it to him!"; }
+});
+</script>
+</body>
+</html>
